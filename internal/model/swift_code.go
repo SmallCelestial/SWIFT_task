@@ -5,8 +5,8 @@ type Branch struct {
 	BankName      string `gorm:"size:255"`
 	CountryISO2   string `gorm:"size:2"`
 	CountryName   string `gorm:"size:255"`
-	SwiftCode     string `gorm:"size:11;primaryKey"`
 	IsHeadquarter bool   `gorm:"default:false"`
+	SwiftCode     string `gorm:"size:11;primaryKey"`
 }
 
 type BranchRelationship struct {
@@ -17,6 +17,47 @@ type BranchRelationship struct {
 	OrdinaryBranch    *Branch `gorm:"foreignKey:OrdinaryBranchSwiftCode;references:SwiftCode"`
 }
 
+type BranchWithoutCountryNameDto struct {
+	Address       string `json:"address"`
+	BankName      string `json:"bankName"`
+	CountryISO2   string `json:"countryISO2"`
+	IsHeadquarter bool   `json:"isHeadquarter"`
+	SwiftCode     string `json:"swiftCode"`
+}
+
+type BranchDto struct {
+	Address       string                        `json:"address"`
+	BankName      string                        `json:"bankName"`
+	CountryISO2   string                        `json:"countryISO2"`
+	CountryName   string                        `json:"countryName"`
+	IsHeadquarter bool                          `json:"isHeadquarter"`
+	SwiftCode     string                        `json:"swiftCode"`
+	Branches      []BranchWithoutCountryNameDto `json:"branches,omitempty"`
+}
+
 func (b Branch) GetHeadQuarterSwiftCode() string {
 	return b.SwiftCode[:8] + "XXX"
+}
+
+func (b Branch) ToBranchWithoutCountryNameDto() BranchWithoutCountryNameDto {
+	return BranchWithoutCountryNameDto{
+		Address:       b.Address,
+		BankName:      b.BankName,
+		CountryISO2:   b.CountryISO2,
+		IsHeadquarter: b.IsHeadquarter,
+		SwiftCode:     b.SwiftCode,
+	}
+}
+
+func (b Branch) ToBranchDto() BranchDto {
+	return BranchDto{
+		Address:       b.Address,
+		BankName:      b.BankName,
+		CountryISO2:   b.CountryISO2,
+		CountryName:   b.CountryName,
+		IsHeadquarter: b.IsHeadquarter,
+		SwiftCode:     b.SwiftCode,
+		Branches:      nil,
+	}
+
 }
