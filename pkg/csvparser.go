@@ -3,6 +3,7 @@ package pkg
 import (
 	"SWIFT_task/internal/model"
 	"encoding/csv"
+	"fmt"
 	"os"
 	"strings"
 )
@@ -12,7 +13,13 @@ func ParseSwiftCsvToBranches(filePath string) (map[string]*model.Branch, error) 
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
+
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			panic(fmt.Sprintf("Error closing file: %v", err))
+		}
+	}(file)
 
 	reader := csv.NewReader(file)
 	records, err := readCsvWithoutHeaders(reader)
@@ -22,7 +29,6 @@ func ParseSwiftCsvToBranches(filePath string) (map[string]*model.Branch, error) 
 	}
 
 	branches := getBranchesFromRecords(records)
-	assignBranchesToHeadquarters(branches)
 	return branches, nil
 }
 
@@ -68,24 +74,4 @@ func getBranchesFromRecords(records [][]string) map[string]*model.Branch {
 	}
 
 	return branches
-}
-
-func assignBranchesToHeadquarters(branches map[string]*model.Branch) {
-	for _, branch := range branches {
-		if !branch.IsHeadquarter {
-			headquarter := findHeadquarterForBranch(branch, branches)
-			if headquarter != nil {
-				headquarter.Branches = append(headquarter.Branches, *branch)
-			}
-		}
-	}
-}
-
-func findHeadquarterForBranch(branch *model.Branch, branches map[string]*model.Branch) *model.Branch {
-	headquarterSwiftCode := branch.SwiftCode[:8] + "XXX"
-	headquarter, ok := branches[headquarterSwiftCode]
-	if !ok {
-		return nil
-	}
-	return headquarter
 }
