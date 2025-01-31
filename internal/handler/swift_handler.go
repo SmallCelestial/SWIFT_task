@@ -90,3 +90,23 @@ func AddSwiftCode(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "SWIFT code added successfully"})
 }
+
+func RemoveSwiftCode(c *gin.Context) {
+	swiftCode := c.Param("swift-code")
+	var branch model.Branch
+	if err := db.DB.Where("swift_code = ?", swiftCode).First(&branch).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "SWIFT code not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error", "details": err.Error()})
+		}
+		return
+	}
+
+	if err := db.DB.Delete(&branch).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to remove SWIFT code", "details": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "SWIFT code " + swiftCode + " removed successfully"})
+}
