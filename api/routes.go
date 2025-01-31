@@ -9,6 +9,7 @@ import (
 func SetupRouter() *gin.Engine {
 	router := gin.Default()
 	router.GET("/v1/swift-codes/:swift-code", handler.GetBranchDetails)
+	router.GET("/v1/swift-codes/country/:countryISO2code", handler.GetBranchesByISO2code)
 	return router
 }
 

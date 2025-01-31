@@ -35,6 +35,12 @@ type BranchDto struct {
 	Branches      []BranchWithoutCountryNameDto `json:"branches,omitempty"`
 }
 
+type BranchesForCountryDto struct {
+	CountryISO2 string                        `json:"countryISO2"`
+	CountryName string                        `json:"countryName"`
+	Branches    []BranchWithoutCountryNameDto `json:"swiftCodes"`
+}
+
 func (b Branch) GetHeadQuarterSwiftCode() string {
 	return b.SwiftCode[:8] + "XXX"
 }

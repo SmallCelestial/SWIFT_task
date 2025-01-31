@@ -45,3 +45,32 @@ func GetBranchDetails(c *gin.Context) {
 	c.JSON(http.StatusOK, branchDto)
 
 }
+
+func GetBranchesByISO2code(c *gin.Context) {
+	countryISO2code := c.Param("countryISO2code")
+
+	var branches []model.Branch
+	if err := db.DB.Where("country_iso2 = ?", countryISO2code).Find(&branches).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		return
+	}
+
+	if len(branches) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "No branches found for the provided ISO code"})
+		return
+	}
+
+	countryName := branches[0].CountryName
+	branchesDto := make([]model.BranchWithoutCountryNameDto, len(branches))
+	for i, branch := range branches {
+		branchesDto[i] = branch.ToBranchWithoutCountryNameDto()
+	}
+
+	responseDto := model.BranchesForCountryDto{
+		CountryISO2: countryISO2code,
+		CountryName: countryName,
+		Branches:    branchesDto,
+	}
+
+	c.JSON(http.StatusOK, responseDto)
+}
