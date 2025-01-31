@@ -1,12 +1,12 @@
 package model
 
 type Branch struct {
-	Address       string `gorm:"size:255"`
-	BankName      string `gorm:"size:255"`
-	CountryISO2   string `gorm:"size:2"`
-	CountryName   string `gorm:"size:255"`
-	IsHeadquarter bool   `gorm:"default:false"`
-	SwiftCode     string `gorm:"size:11;primaryKey"`
+	Address       string `gorm:"size:255" json:"address"`
+	BankName      string `gorm:"size:255" json:"bankName"`
+	CountryISO2   string `gorm:"size:2" json:"countryISO2"`
+	CountryName   string `gorm:"size:255" json:"countryName"`
+	IsHeadquarter bool   `gorm:"default:false" json:"isHeadquarter"`
+	SwiftCode     string `gorm:"size:11;primaryKey" json:"swiftCode"`
 }
 
 type BranchRelationship struct {

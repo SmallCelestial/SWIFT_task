@@ -74,3 +74,19 @@ func GetBranchesByISO2code(c *gin.Context) {
 
 	c.JSON(http.StatusOK, responseDto)
 }
+
+func AddSwiftCode(c *gin.Context) {
+
+	var branch model.Branch
+	if err := c.ShouldBindJSON(&branch); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request data", "details": err.Error()})
+		return
+	}
+
+	if err := db.DB.Create(&branch).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add SWIFT code", "details": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "SWIFT code added successfully"})
+}
