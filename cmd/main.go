@@ -3,9 +3,17 @@ package main
 import (
 	"SWIFT_task/api"
 	"SWIFT_task/internal/db"
+	"SWIFT_task/internal/handler"
+	"SWIFT_task/internal/repository"
+	"SWIFT_task/internal/service"
 )
 
 func main() {
-	db.InitDB()
-	api.Run()
+	database := db.InitDB()
+
+	branchRepo := repository.NewBranchRepository(database)
+	branchService := service.NewBranchService(branchRepo)
+	branchHandler := handler.NewBranchHandler(branchService)
+
+	api.Run(branchHandler)
 }

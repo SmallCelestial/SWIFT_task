@@ -8,9 +8,7 @@ import (
 	"log"
 )
 
-var DB *gorm.DB
-
-func InitDB() {
+func InitDB() *gorm.DB {
 	//host := os.Getenv("DB_HOST")
 	//user := os.Getenv("DB_USER")
 	//password := os.Getenv("DB_PASSWORD")
@@ -23,15 +21,16 @@ func InitDB() {
 	port := "5432"
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", host, user, password, dbname, port)
 
-	var err error
-	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	err = DB.AutoMigrate(&model.Branch{}, &model.BranchRelationship{})
+	err = db.AutoMigrate(&model.Branch{}, &model.BranchRelationship{})
 	if err != nil {
 		log.Fatalf("Migration failed: %v", err)
 	}
+
+	return db
 }

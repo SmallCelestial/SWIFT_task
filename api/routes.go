@@ -6,17 +6,17 @@ import (
 	"log"
 )
 
-func SetupRouter() *gin.Engine {
+func SetupRouter(branchHandler *handler.BranchHandler) *gin.Engine {
 	router := gin.Default()
-	router.GET("/v1/swift-codes/:swift-code", handler.GetBranchDetails)
-	router.GET("/v1/swift-codes/country/:countryISO2code", handler.GetBranchesByISO2code)
-	router.POST("/v1/swift-codes/", handler.AddSwiftCode)
-	router.DELETE("/v1/swift-codes/:swift-code", handler.RemoveSwiftCode)
+	router.GET("/v1/swift-codes/:swift-code", branchHandler.GetBranchDetails)
+	router.GET("/v1/swift-codes/country/:countryISO2code", branchHandler.GetBranchesByISO2code)
+	router.POST("/v1/swift-codes/", branchHandler.AddSwiftCode)
+	router.DELETE("/v1/swift-codes/:swift-code", branchHandler.RemoveSwiftCode)
 	return router
 }
 
-func Run() {
-	router := SetupRouter()
+func Run(branchHandler *handler.BranchHandler) {
+	router := SetupRouter(branchHandler)
 	err := router.Run(":8080")
 	if err != nil {
 		log.Fatalf("Server failed to start: %v", err)
