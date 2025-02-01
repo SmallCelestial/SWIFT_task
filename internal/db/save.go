@@ -3,12 +3,13 @@ package db
 import (
 	"SWIFT_task/internal/model"
 	"fmt"
+	"gorm.io/gorm"
 	"log"
 )
 
-func SaveBranches(branches map[string]*model.Branch) {
+func SaveBranches(branches map[string]*model.Branch, db *gorm.DB) {
 	for _, branch := range branches {
-		result := DB.Create(branch)
+		result := db.Create(branch)
 		if result.Error != nil {
 			log.Printf("Error saving branches %s", result.Error.Error())
 		}
@@ -27,7 +28,7 @@ func SaveBranches(branches map[string]*model.Branch) {
 					OrdinaryBranch:          branch,
 				}
 
-				result := DB.Create(assignBranches)
+				result := db.Create(assignBranches)
 				if result.Error != nil {
 					log.Printf("Error saving branches %s", result.Error.Error())
 				}

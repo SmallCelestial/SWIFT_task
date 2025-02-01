@@ -5,7 +5,6 @@ import (
 	"SWIFT_task/internal/service"
 	"errors"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	"net/http"
 )
 
@@ -21,12 +20,13 @@ func (h *BranchHandler) GetBranchDetails(c *gin.Context) {
 	swiftCode := c.Param("swift-code")
 
 	branchDto, err := h.branchService.GetBranchDetails(swiftCode)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+	var branchServiceErr *service.BranchNotExistsError
+	if errors.As(err, &branchServiceErr) {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Branch not found"})
 		return
 	}
-	if branchDto == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Branch not found"})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
 		return
 	}
 
@@ -37,12 +37,18 @@ func (h *BranchHandler) GetBranchesByISO2code(c *gin.Context) {
 	countryISO2code := c.Param("countryISO2code")
 
 	response, err := h.branchService.GetBranchesByISO2code(countryISO2code)
+	var validationErr *service.ValidationError
+	if errors.As(err, &validationErr) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Error()})
+		return
+	}
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
 		return
 	}
 	if response == nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Branches not found for ISO2 code " + countryISO2code})
+		return
 	}
 
 	c.JSON(http.StatusOK, response)
@@ -51,12 +57,27 @@ func (h *BranchHandler) GetBranchesByISO2code(c *gin.Context) {
 func (h *BranchHandler) AddSwiftCode(c *gin.Context) {
 
 	var branch model.Branch
-	if err := c.ShouldBindJSON(&branch); err != nil {
+	err := c.ShouldBindJSON(&branch)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request data", "details": err.Error()})
 		return
 	}
 
-	if err := h.branchService.AddSwiftCode(&branch); err != nil {
+	err = h.branchService.AddSwiftCode(branch)
+
+	var validationErr *service.ValidationError
+	if errors.As(err, &validationErr) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Error()})
+		return
+	}
+
+	var branchExistsErr *service.BranchExistsError
+	if errors.As(err, &branchExistsErr) {
+		c.JSON(http.StatusConflict, gin.H{"error": branchExistsErr.Error()})
+		return
+	}
+
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add SWIFT code", "details": err.Error()})
 		return
 	}
@@ -67,12 +88,14 @@ func (h *BranchHandler) AddSwiftCode(c *gin.Context) {
 func (h *BranchHandler) RemoveSwiftCode(c *gin.Context) {
 	swiftCode := c.Param("swift-code")
 
-	if err := h.branchService.RemoveBranchBySwiftCode(swiftCode); err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "SWIFT code " + swiftCode + " not found"})
-		} else {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to remove SWIFT code", "details": err.Error()})
-		}
+	err := h.branchService.RemoveBranchBySwiftCode(swiftCode)
+	var branchNotExistsErr *service.BranchNotExistsError
+	if errors.As(err, &branchNotExistsErr) {
+		c.JSON(http.StatusNotFound, gin.H{"error": "SWIFT code " + swiftCode + " not found"})
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to remove SWIFT code", "details": err.Error()})
 		return
 	}
 
