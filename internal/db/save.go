@@ -2,37 +2,50 @@ package db
 
 import (
 	"SWIFT_task/internal/model"
-	"fmt"
+	"SWIFT_task/pkg"
 	"gorm.io/gorm"
 	"log"
 )
 
-func SaveBranches(branches map[string]*model.Bank, db *gorm.DB) {
-	for _, branch := range branches {
-		result := db.Create(branch)
-		if result.Error != nil {
-			log.Printf("Error saving branches %s", result.Error.Error())
-		}
+func SaveData(fileName string, db *gorm.DB) {
+	records, err := pkg.ParseCsvRows(fileName)
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	for _, branch := range branches {
-		if !branch.IsHeadquarter {
-			headquarter, ok := branches[branch.GetHeadQuarterSwiftCode()]
-			if !ok {
-				fmt.Printf("Bank: %+v is not headquarter, but also hasn't headquarter\n", branch)
-			} else {
-				assignBranches := &model.BankRelationship{
-					HeadquarterSwiftCode: headquarter.SwiftCode,
-					BranchSwiftCode:      branch.SwiftCode,
-					Headquarter:          headquarter,
-					Branch:               branch,
-				}
+	countries := pkg.GetCountriesFromRecords(records)
+	banks := pkg.GetBanksFromRecords(records)
+	relationships := pkg.GetRelationshipsFromBanks(banks)
 
-				result := db.Create(assignBranches)
-				if result.Error != nil {
-					log.Printf("Error saving branches %s", result.Error.Error())
-				}
-			}
+	saveCountries(countries, db)
+	saveBanks(banks, db)
+	saveRelationships(relationships, db)
+
+}
+
+func saveBanks(banks map[string]model.Bank, db *gorm.DB) {
+	for _, bank := range banks {
+		result := db.Create(&bank)
+		if result.Error != nil {
+			log.Printf("Error saving banks %s", result.Error.Error())
+		}
+	}
+}
+
+func saveRelationships(relationships []model.BankRelationship, db *gorm.DB) {
+	for _, relationship := range relationships {
+		result := db.Create(&relationship)
+		if result.Error != nil {
+			log.Printf("Error saving relationships %s", result.Error.Error())
+		}
+	}
+}
+
+func saveCountries(countries []model.Country, db *gorm.DB) {
+	for _, country := range countries {
+		result := db.Create(&country)
+		if result.Error != nil {
+			log.Printf("Error saving countries %s", result.Error.Error())
 		}
 	}
 }
