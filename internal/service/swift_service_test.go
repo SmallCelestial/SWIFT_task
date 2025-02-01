@@ -11,25 +11,25 @@ type MockBranchRepo struct {
 	mock.Mock
 }
 
-func (m *MockBranchRepo) GetBranchBySwiftCode(swiftCode string) (*model.Branch, error) {
+func (m *MockBranchRepo) GetBranchBySwiftCode(swiftCode string) (*model.Bank, error) {
 	args := m.Called(swiftCode)
 	if args.Get(0) != nil {
-		return args.Get(0).(*model.Branch), args.Error(1)
+		return args.Get(0).(*model.Bank), args.Error(1)
 	}
 	return nil, args.Error(1)
 }
 
-func (m *MockBranchRepo) GetOrdinaryBranchesForHeadquarter(swiftCode string) ([]model.Branch, error) {
+func (m *MockBranchRepo) GetOrdinaryBranchesForHeadquarter(swiftCode string) ([]model.Bank, error) {
 	args := m.Called(swiftCode)
-	return args.Get(0).([]model.Branch), args.Error(1)
+	return args.Get(0).([]model.Bank), args.Error(1)
 }
 
-func (m *MockBranchRepo) GetBranchesByISO2code(countryISO2code string) ([]model.Branch, error) {
+func (m *MockBranchRepo) GetBranchesByISO2code(countryISO2code string) ([]model.Bank, error) {
 	args := m.Called(countryISO2code)
-	return args.Get(0).([]model.Branch), args.Error(1)
+	return args.Get(0).([]model.Bank), args.Error(1)
 }
 
-func (m *MockBranchRepo) CreateBranch(branch *model.Branch) error {
+func (m *MockBranchRepo) CreateBranch(branch *model.Bank) error {
 	args := m.Called(branch)
 	return args.Error(0)
 }
@@ -46,7 +46,7 @@ func TestBranchService_AddSwiftCode(t *testing.T) {
 
 	t.Run("Should return ValidationError due to ISO2 code", func(t *testing.T) {
 		// given
-		branchWithTooLongCountryISO2 := model.Branch{
+		branchWithTooLongCountryISO2 := model.Bank{
 			SwiftCode:     "ABCDEF12345",
 			Address:       "123 Test St",
 			BankName:      "Test Bank",
@@ -66,7 +66,7 @@ func TestBranchService_AddSwiftCode(t *testing.T) {
 
 	t.Run("Should return BranchExistsError due to duplicate key", func(t *testing.T) {
 		// given
-		duplicatedBranch := model.Branch{
+		duplicatedBranch := model.Bank{
 			SwiftCode:     "ABCDEF12345",
 			Address:       "123 Test St",
 			BankName:      "Test Bank",
@@ -82,12 +82,12 @@ func TestBranchService_AddSwiftCode(t *testing.T) {
 		// then
 		var branchExistsErr *BranchExistsError
 		assert.ErrorAs(t, err, &branchExistsErr)
-		assert.Equal(t, "Branch with swiftCode "+duplicatedBranch.SwiftCode+" already exists.", branchExistsErr.Message)
+		assert.Equal(t, "Bank with swiftCode "+duplicatedBranch.SwiftCode+" already exists.", branchExistsErr.Message)
 	})
 
 	t.Run("Should properly add branch", func(t *testing.T) {
 		// given
-		validBranch := model.Branch{
+		validBranch := model.Bank{
 			SwiftCode:     "ABCDEF12346",
 			Address:       "123 Test St",
 			BankName:      "Test Bank",
@@ -120,13 +120,13 @@ func TestBranchService_GetBranchDetails(t *testing.T) {
 		// then
 		var branchNotExistsErr *BranchNotExistsError
 		assert.ErrorAs(t, err, &branchNotExistsErr)
-		assert.Equal(t, "Branch with swiftCode XXXXXX12346 not exists.", branchNotExistsErr.Message)
+		assert.Equal(t, "Bank with swiftCode XXXXXX12346 not exists.", branchNotExistsErr.Message)
 		assert.Nil(t, branch)
 	})
 
 	t.Run("should return ordinary branchInfo", func(t *testing.T) {
 		// given
-		validBranch := model.Branch{
+		validBranch := model.Bank{
 			SwiftCode:     "ABCDEF12346",
 			Address:       "123 Test St",
 			BankName:      "Test Bank",
@@ -147,7 +147,7 @@ func TestBranchService_GetBranchDetails(t *testing.T) {
 
 	t.Run("should return headquarterInfo", func(t *testing.T) {
 		// given
-		headquarter := model.Branch{
+		headquarter := model.Bank{
 			SwiftCode:     "AAAAA12XXX",
 			Address:       "123 Test St",
 			BankName:      "Test Bank",
@@ -155,7 +155,7 @@ func TestBranchService_GetBranchDetails(t *testing.T) {
 			CountryName:   "Poland",
 			IsHeadquarter: true,
 		}
-		branch1 := &model.Branch{
+		branch1 := &model.Bank{
 			SwiftCode:     "AAAAA12346",
 			Address:       "123 Test St",
 			BankName:      "Test Bank",
@@ -163,7 +163,7 @@ func TestBranchService_GetBranchDetails(t *testing.T) {
 			CountryName:   "Poland",
 			IsHeadquarter: false,
 		}
-		branch2 := &model.Branch{
+		branch2 := &model.Bank{
 			SwiftCode:     "AAAAA12RTP",
 			Address:       "123 Test St",
 			BankName:      "Test Bank",
@@ -174,9 +174,9 @@ func TestBranchService_GetBranchDetails(t *testing.T) {
 		mockRepo.On("GetBranchBySwiftCode", headquarter.SwiftCode).Return(&headquarter, nil)
 		mockRepo.On("GetBranchBySwiftCode", branch1.SwiftCode).Return(&branch1, nil)
 		mockRepo.On("GetBranchBySwiftCode", branch2.SwiftCode).Return(&branch2, nil)
-		mockRepo.On("GetOrdinaryBranchesForHeadquarter", headquarter.SwiftCode).Return([]model.Branch{*branch1, *branch2}, nil)
+		mockRepo.On("GetOrdinaryBranchesForHeadquarter", headquarter.SwiftCode).Return([]model.Bank{*branch1, *branch2}, nil)
 		expectedBranchInfo := headquarter.ToBranchDto()
-		expectedBranchInfo.Branches = []model.BranchWithoutCountryNameDto{branch1.ToBranchWithoutCountryNameDto(), branch2.ToBranchWithoutCountryNameDto()}
+		expectedBranchInfo.Branches = []model.BankWithoutCountryNameDto{branch1.ToBranchWithoutCountryNameDto(), branch2.ToBranchWithoutCountryNameDto()}
 
 		// when
 		result, err := service.GetBranchDetails(headquarter.SwiftCode)
@@ -209,7 +209,7 @@ func TestBranchService_GetBranchesByISO2code(t *testing.T) {
 
 	t.Run("Should return Branches with given ISO2 code in proper structure", func(t *testing.T) {
 		// given
-		branch1 := model.Branch{
+		branch1 := model.Bank{
 			SwiftCode:     "AAAAA12XXX",
 			Address:       "123 Test St",
 			BankName:      "Test Bank",
@@ -217,7 +217,7 @@ func TestBranchService_GetBranchesByISO2code(t *testing.T) {
 			CountryName:   "Poland",
 			IsHeadquarter: true,
 		}
-		branch2 := model.Branch{
+		branch2 := model.Bank{
 			SwiftCode:     "AAAAA12346",
 			Address:       "123 Test St",
 			BankName:      "Test Bank",
@@ -225,11 +225,11 @@ func TestBranchService_GetBranchesByISO2code(t *testing.T) {
 			CountryName:   "Poland",
 			IsHeadquarter: false,
 		}
-		mockRepo.On("GetBranchesByISO2code", "PL").Return([]model.Branch{branch1, branch2}, nil)
-		expectedBranches := model.BranchesForCountryDto{
+		mockRepo.On("GetBranchesByISO2code", "PL").Return([]model.Bank{branch1, branch2}, nil)
+		expectedBranches := model.CountryBanksDto{
 			CountryISO2: "PL",
 			CountryName: "Poland",
-			Branches:    []model.BranchWithoutCountryNameDto{branch1.ToBranchWithoutCountryNameDto(), branch2.ToBranchWithoutCountryNameDto()},
+			Branches:    []model.BankWithoutCountryNameDto{branch1.ToBranchWithoutCountryNameDto(), branch2.ToBranchWithoutCountryNameDto()},
 		}
 
 		// when
@@ -256,12 +256,12 @@ func TestBranchService_RemoveBranchBySwiftCode(t *testing.T) {
 		// then
 		var branchNotExistErr *BranchNotExistsError
 		assert.ErrorAs(t, err, &branchNotExistErr)
-		assert.Equal(t, "Branch with swiftCode AAAAAAAAAAA not exists.", branchNotExistErr.Message)
+		assert.Equal(t, "Bank with swiftCode AAAAAAAAAAA not exists.", branchNotExistErr.Message)
 	})
 
 	t.Run("Should remove branch successfully ", func(t *testing.T) {
 		// given
-		branch := model.Branch{
+		branch := model.Bank{
 			SwiftCode:     "BBBBBBBBBBB",
 			Address:       "123 Test St",
 			BankName:      "Test Bank",

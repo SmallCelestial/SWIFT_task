@@ -22,7 +22,7 @@ func (h *BranchHandler) GetBranchDetails(c *gin.Context) {
 	branchDto, err := h.branchService.GetBranchDetails(swiftCode)
 	var branchServiceErr *service.BranchNotExistsError
 	if errors.As(err, &branchServiceErr) {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Branch not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Bank not found"})
 		return
 	}
 	if err != nil {
@@ -56,7 +56,7 @@ func (h *BranchHandler) GetBranchesByISO2code(c *gin.Context) {
 
 func (h *BranchHandler) AddSwiftCode(c *gin.Context) {
 
-	var branch model.Branch
+	var branch model.Bank
 	err := c.ShouldBindJSON(&branch)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request data", "details": err.Error()})

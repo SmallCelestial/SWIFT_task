@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func ParseSwiftCsvToBranches(filePath string) (map[string]*model.Branch, error) {
+func ParseSwiftCsvToBranches(filePath string) (map[string]*model.Bank, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return nil, err
@@ -50,8 +50,8 @@ func readCsvWithoutHeaders(reader *csv.Reader) ([][]string, error) {
 	return records, nil
 }
 
-func getBranchesFromRecords(records [][]string) map[string]*model.Branch {
-	branches := make(map[string]*model.Branch, len(records))
+func getBranchesFromRecords(records [][]string) map[string]*model.Bank {
+	branches := make(map[string]*model.Bank, len(records))
 
 	for _, record := range records {
 		address := record[4]
@@ -61,7 +61,7 @@ func getBranchesFromRecords(records [][]string) map[string]*model.Branch {
 		swiftCode := record[1]
 		isHeadquarter := isHeadQuarter(swiftCode)
 
-		branchRecord := &model.Branch{
+		branchRecord := &model.Bank{
 			Address:       address,
 			BankName:      bankName,
 			CountryISO2:   countryISO2,

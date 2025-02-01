@@ -7,7 +7,7 @@ import (
 	"log"
 )
 
-func SaveBranches(branches map[string]*model.Branch, db *gorm.DB) {
+func SaveBranches(branches map[string]*model.Bank, db *gorm.DB) {
 	for _, branch := range branches {
 		result := db.Create(branch)
 		if result.Error != nil {
@@ -19,13 +19,13 @@ func SaveBranches(branches map[string]*model.Branch, db *gorm.DB) {
 		if !branch.IsHeadquarter {
 			headquarter, ok := branches[branch.GetHeadQuarterSwiftCode()]
 			if !ok {
-				fmt.Printf("Branch: %+v is not headquarter, but also hasn't headquarter\n", branch)
+				fmt.Printf("Bank: %+v is not headquarter, but also hasn't headquarter\n", branch)
 			} else {
-				assignBranches := &model.BranchRelationship{
-					HeadquarterSwiftCode:    headquarter.SwiftCode,
-					OrdinaryBranchSwiftCode: branch.SwiftCode,
-					HeadquarterBranch:       headquarter,
-					OrdinaryBranch:          branch,
+				assignBranches := &model.BankRelationship{
+					HeadquarterSwiftCode: headquarter.SwiftCode,
+					BranchSwiftCode:      branch.SwiftCode,
+					Headquarter:          headquarter,
+					Branch:               branch,
 				}
 
 				result := db.Create(assignBranches)

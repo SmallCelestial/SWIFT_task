@@ -15,13 +15,13 @@ func NewBranchService(branchRepo repository.BranchRepository) *BranchService {
 	return &BranchService{branchRepo: branchRepo}
 }
 
-func (s *BranchService) GetBranchDetails(swiftCode string) (*model.BranchDto, error) {
+func (s *BranchService) GetBranchDetails(swiftCode string) (*model.BankDto, error) {
 	branch, err := s.branchRepo.GetBranchBySwiftCode(swiftCode)
 	if err != nil {
 		return nil, err
 	}
 	if branch == nil {
-		return nil, NewBranchNotExistsError("Branch with swiftCode " + swiftCode + " not exists.")
+		return nil, NewBranchNotExistsError("Bank with swiftCode " + swiftCode + " not exists.")
 	}
 
 	branchDto := branch.ToBranchDto()
@@ -32,7 +32,7 @@ func (s *BranchService) GetBranchDetails(swiftCode string) (*model.BranchDto, er
 			return nil, err
 		}
 
-		branchDTOs := make([]model.BranchWithoutCountryNameDto, len(branches))
+		branchDTOs := make([]model.BankWithoutCountryNameDto, len(branches))
 		for i, b := range branches {
 			branchDTOs[i] = b.ToBranchWithoutCountryNameDto()
 		}
@@ -43,7 +43,7 @@ func (s *BranchService) GetBranchDetails(swiftCode string) (*model.BranchDto, er
 	return &branchDto, nil
 }
 
-func (s *BranchService) GetBranchesByISO2code(countryISO2code string) (*model.BranchesForCountryDto, error) {
+func (s *BranchService) GetBranchesByISO2code(countryISO2code string) (*model.CountryBanksDto, error) {
 	if len(countryISO2code) != 2 {
 		return nil, NewValidationError("Len of countryISO2 code should be 2. Got len: " + strconv.Itoa(len(countryISO2code)))
 	}
@@ -57,19 +57,19 @@ func (s *BranchService) GetBranchesByISO2code(countryISO2code string) (*model.Br
 	}
 
 	countryName := branches[0].CountryName
-	branchesDto := make([]model.BranchWithoutCountryNameDto, len(branches))
+	branchesDto := make([]model.BankWithoutCountryNameDto, len(branches))
 	for i, branch := range branches {
 		branchesDto[i] = branch.ToBranchWithoutCountryNameDto()
 	}
 
-	return &model.BranchesForCountryDto{
+	return &model.CountryBanksDto{
 		CountryISO2: countryISO2code,
 		CountryName: countryName,
 		Branches:    branchesDto,
 	}, err
 }
 
-func (s *BranchService) AddSwiftCode(branch model.Branch) error {
+func (s *BranchService) AddSwiftCode(branch model.Bank) error {
 	if len(branch.CountryISO2) != 2 {
 		return NewValidationError("Len of countryISO2 code should be 2. Got len: " + strconv.Itoa(len(branch.CountryISO2)))
 	}
@@ -79,7 +79,7 @@ func (s *BranchService) AddSwiftCode(branch model.Branch) error {
 		return err
 	}
 	if existingBranch != nil {
-		return NewBranchExistsError("Branch with swiftCode " + branch.SwiftCode + " already exists.")
+		return NewBranchExistsError("Bank with swiftCode " + branch.SwiftCode + " already exists.")
 	}
 	fmt.Println("Adding swift code: " + branch.SwiftCode)
 	return s.branchRepo.CreateBranch(&branch)
@@ -91,7 +91,7 @@ func (s *BranchService) RemoveBranchBySwiftCode(swiftCode string) error {
 		return err
 	}
 	if branch == nil {
-		return NewBranchNotExistsError("Branch with swiftCode " + swiftCode + " not exists.")
+		return NewBranchNotExistsError("Bank with swiftCode " + swiftCode + " not exists.")
 	}
 
 	return s.branchRepo.RemoveBranchBySwiftCode(swiftCode)

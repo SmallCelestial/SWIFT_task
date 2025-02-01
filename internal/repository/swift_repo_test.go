@@ -15,13 +15,13 @@ func setupTestDB() *gorm.DB {
 		log.Fatalf("Failed to open database: %v", err)
 	}
 
-	err = db.AutoMigrate(&model.Branch{})
-	err = db.AutoMigrate(&model.BranchRelationship{})
+	err = db.AutoMigrate(&model.Bank{})
+	err = db.AutoMigrate(&model.BankRelationship{})
 	if err != nil {
 		log.Fatalf("Failed to create tabels in database: %v", err)
 	}
 
-	branch1 := &model.Branch{
+	branch1 := &model.Bank{
 		SwiftCode:     "AIPOPLP1XXX",
 		Address:       "123 Test St",
 		BankName:      "Test Bank1",
@@ -30,7 +30,7 @@ func setupTestDB() *gorm.DB {
 		IsHeadquarter: true,
 	}
 
-	branch2 := &model.Branch{
+	branch2 := &model.Bank{
 		SwiftCode:     "AIPOPLP1FGD",
 		Address:       "456 Another St",
 		BankName:      "Another Bank",
@@ -39,7 +39,7 @@ func setupTestDB() *gorm.DB {
 		IsHeadquarter: false,
 	}
 
-	branch3 := &model.Branch{
+	branch3 := &model.Bank{
 		SwiftCode:     "FEDCBA12XXX",
 		Address:       "HYRJA 3 RR. DRITAN HOXHA ND. 11 TIRANA, TIRANA, 1023",
 		BankName:      "UNITED BANK OF ALBANIA SH.A",
@@ -52,11 +52,11 @@ func setupTestDB() *gorm.DB {
 	db.Create(branch2)
 	db.Create(branch3)
 
-	db.Create(&model.BranchRelationship{
-		HeadquarterSwiftCode:    "AIPOPLP1XXX",
-		OrdinaryBranchSwiftCode: "AIPOPLP1FGD",
-		HeadquarterBranch:       branch1,
-		OrdinaryBranch:          branch2,
+	db.Create(&model.BankRelationship{
+		HeadquarterSwiftCode: "AIPOPLP1XXX",
+		BranchSwiftCode:      "AIPOPLP1FGD",
+		Headquarter:          branch1,
+		Branch:               branch2,
 	})
 
 	return db
@@ -68,7 +68,7 @@ func TestBranchRepository_CreateBranch(t *testing.T) {
 
 	t.Run("should create branch successfully", func(t *testing.T) {
 		// given
-		branch := &model.Branch{
+		branch := &model.Bank{
 			SwiftCode:     "ABCDEF12XXX",
 			Address:       "123 Test St",
 			BankName:      "Test Bank",
@@ -83,7 +83,7 @@ func TestBranchRepository_CreateBranch(t *testing.T) {
 		// then
 		assert.NoError(t, err)
 
-		var storedBranch model.Branch
+		var storedBranch model.Bank
 		err = db.First(&storedBranch, "swift_code = ?", branch.SwiftCode).Error
 		assert.NoError(t, err)
 		assert.Equal(t, branch, &storedBranch)
@@ -91,7 +91,7 @@ func TestBranchRepository_CreateBranch(t *testing.T) {
 
 	t.Run("should return error when creating branch with duplicate SwiftCode", func(t *testing.T) {
 		// given
-		duplicateBranch := &model.Branch{
+		duplicateBranch := &model.Bank{
 			SwiftCode:     "ABCDEF12XXX",
 			Address:       "Another Address",
 			BankName:      "Another Bank",
@@ -114,7 +114,7 @@ func TestBranchRepository_GetBranchBySwiftCode(t *testing.T) {
 
 	t.Run("should get branch successfully", func(t *testing.T) {
 		// given
-		branch1 := &model.Branch{
+		branch1 := &model.Bank{
 			SwiftCode:     "AIPOPLP1XXX",
 			Address:       "123 Test St",
 			BankName:      "Test Bank1",
@@ -124,7 +124,7 @@ func TestBranchRepository_GetBranchBySwiftCode(t *testing.T) {
 		}
 		swiftCode1 := branch1.SwiftCode
 
-		branch2 := &model.Branch{
+		branch2 := &model.Bank{
 			SwiftCode:     "AIPOPLP1FGD",
 			Address:       "456 Another St",
 			BankName:      "Another Bank",
@@ -172,7 +172,7 @@ func TestBranchRepository_GetBranchesByISO2code(t *testing.T) {
 		// given
 		isoCodeWithTwoBranches := "PL"
 
-		twoBranches := []model.Branch{
+		twoBranches := []model.Bank{
 			{
 				SwiftCode:     "AIPOPLP1XXX",
 				Address:       "123 Test St",
@@ -203,7 +203,7 @@ func TestBranchRepository_GetBranchesByISO2code(t *testing.T) {
 	t.Run("should return one branch in a list successfully", func(t *testing.T) {
 		// given
 		isoCodeWithOneBranch := "BG"
-		oneBranch := []model.Branch{
+		oneBranch := []model.Bank{
 			{
 				SwiftCode:     "FEDCBA12XXX",
 				Address:       "HYRJA 3 RR. DRITAN HOXHA ND. 11 TIRANA, TIRANA, 1023",
@@ -231,7 +231,7 @@ func TestBranchRepository_GetBranchesByISO2code(t *testing.T) {
 
 		// then
 		assert.NoError(t, err)
-		assert.Equal(t, []model.Branch{}, branches)
+		assert.Equal(t, []model.Bank{}, branches)
 	})
 }
 
@@ -242,7 +242,7 @@ func TestBranchRepository_GetOrdinaryBranchesForHeadquarter(t *testing.T) {
 	t.Run("should return branches properly for headquarter", func(t *testing.T) {
 		// given
 		headquarterSwift := "AIPOPLP1XXX"
-		expectedBranches := []model.Branch{
+		expectedBranches := []model.Bank{
 			{
 				SwiftCode:     "AIPOPLP1FGD",
 				Address:       "456 Another St",
@@ -270,7 +270,7 @@ func TestBranchRepository_GetOrdinaryBranchesForHeadquarter(t *testing.T) {
 
 		// then
 		assert.NoError(t, err)
-		assert.Equal(t, []model.Branch{}, resultBraches)
+		assert.Equal(t, []model.Bank{}, resultBraches)
 	})
 
 }
@@ -281,7 +281,7 @@ func TestBranchRepository_RemoveBranchBySwiftCode(t *testing.T) {
 
 	t.Run("should remove branch successfully", func(t *testing.T) {
 		// given
-		branch1 := &model.Branch{
+		branch1 := &model.Bank{
 			SwiftCode:     "AIPOPLP1XXX",
 			Address:       "123 Test St",
 			BankName:      "Test Bank1",
@@ -290,7 +290,7 @@ func TestBranchRepository_RemoveBranchBySwiftCode(t *testing.T) {
 			IsHeadquarter: true,
 		}
 
-		branch2 := &model.Branch{
+		branch2 := &model.Bank{
 			SwiftCode:     "AIPOPLP1FGD",
 			Address:       "456 Another St",
 			BankName:      "Another Bank",
