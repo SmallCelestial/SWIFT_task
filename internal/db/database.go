@@ -42,5 +42,20 @@ func InitDB() *gorm.DB {
 		log.Fatalf("Failed to migrate BankRelationship table: %v", err)
 	}
 
+	fillData(db)
+
 	return db
+}
+
+func fillData(db *gorm.DB) {
+	var bankCount int64
+	var relationshipCount int64
+	var countryCount int64
+	db.Model(&model.Bank{}).Count(&bankCount)
+	db.Model(&model.BankRelationship{}).Count(&relationshipCount)
+	db.Model(&model.Country{}).Count(&countryCount)
+	if bankCount == 0 && relationshipCount == 0 && countryCount == 0 {
+		SaveData("data/swift-codes.csv", db)
+	}
+
 }

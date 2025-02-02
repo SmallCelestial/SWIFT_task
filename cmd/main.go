@@ -10,7 +10,6 @@ import (
 
 func main() {
 	database := db.InitDB()
-	//db.SaveData("data/swift-codes.csv", database)
 
 	bankRepo := repository.NewBankRepository(database)
 	bankService := service.NewBankService(bankRepo)
