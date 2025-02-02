@@ -1,33 +1,16 @@
 package db
 
 import (
+	"SWIFT_task/config"
 	"SWIFT_task/internal/model"
-	"fmt"
-	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
 )
 
 func InitDB() *gorm.DB {
-	//host := os.Getenv("DB_HOST")
-	//user := os.Getenv("DB_USER")
-	//password := os.Getenv("DB_PASSWORD")
-	//dbname := os.Getenv("DB_NAME")
-	//port := "5432"
-	host := "localhost"
-	user := "postgres"
-	password := "admin"
-	dbname := "swift_task"
-	port := "5432"
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", host, user, password, dbname, port)
+	db := config.InitDatabaseConnection()
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-
-	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
-	}
-
-	err = db.AutoMigrate(&model.Country{})
+	err := db.AutoMigrate(&model.Country{})
 	if err != nil {
 		log.Fatalf("Failed to migrate Country table: %v", err)
 	}
@@ -55,7 +38,6 @@ func fillData(db *gorm.DB) {
 	db.Model(&model.BankRelationship{}).Count(&relationshipCount)
 	db.Model(&model.Country{}).Count(&countryCount)
 	if bankCount == 0 && relationshipCount == 0 && countryCount == 0 {
-		SaveData("data/swift-codes.csv", db)
+		SaveData("/app/data/swift-codes.csv", db)
 	}
-
 }

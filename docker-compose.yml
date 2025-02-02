@@ -14,20 +14,23 @@ services:
     networks:
       - swift_network
 
-#  go-app:
-#    build: .
-#    container_name: swift_app
-#    environment:
-#      - DB_HOST=db
-#      - DB_NAME=swift_task
-#      - DB_USER=postgres
-#      - DB_PASSWORD=admin
-#    depends_on:
-#      - db
-#    ports:
-#      - "8080:8080"
-#    networks:
-#      - swift_network
+  go-app:
+    build: .
+    container_name: swift_app
+    environment:
+      - DB_HOST=db
+      - DB_NAME=swift_task
+      - DB_USER=postgres
+      - DB_PASSWORD=admin
+      - DB_PORT=5432
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/app/data
+    networks:
+      - swift_network
 
 volumes:
   postgres_data:
