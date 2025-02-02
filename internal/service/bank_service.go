@@ -3,6 +3,8 @@ package service
 import (
 	"SWIFT_task/internal/model"
 	"SWIFT_task/internal/repository"
+	"errors"
+	"gorm.io/gorm"
 	"strconv"
 )
 
@@ -71,6 +73,14 @@ func (s *BankService) GetBanksByISO2code(countryISO2code string) (*model.Country
 func (s *BankService) AddBank(bank model.Bank) error {
 	if len(bank.CountryISO2) != 2 {
 		return NewValidationError("Len of countryISO2 code should be 2. Got len: " + strconv.Itoa(len(bank.CountryISO2)))
+	}
+
+	_, err := s.bankRepo.GetCountryNameByISO2Code(bank.CountryISO2)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return NewCountryCodeNotExistsError("Country with code " + bank.CountryISO2 + " not exists")
+	}
+	if err != nil {
+		return err
 	}
 
 	existingBank, err := s.bankRepo.GetBankBySwiftCode(bank.SwiftCode)

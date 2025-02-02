@@ -12,6 +12,7 @@ type BankRepository interface {
 	GetBanksByISO2code(countryISO2code string) ([]model.Bank, error)
 	AddBank(branch *model.Bank) error
 	RemoveBankBySwiftCode(swiftCode string) error
+	GetCountryNameByISO2Code(countryISO2code string) (*model.Country, error)
 }
 
 type bankRepository struct {
@@ -76,4 +77,16 @@ func (r *bankRepository) AddBank(bank *model.Bank) error {
 
 func (r *bankRepository) RemoveBankBySwiftCode(swiftCode string) error {
 	return r.db.Where("swift_code = ?", swiftCode).Delete(&model.Bank{}).Error
+}
+
+func (r *bankRepository) GetCountryNameByISO2Code(countryISO2code string) (*model.Country, error) {
+	country := model.Country{}
+	err := r.db.
+		Where("country_iso2_code = ?", countryISO2code).
+		First(&country).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return &country, nil
 }

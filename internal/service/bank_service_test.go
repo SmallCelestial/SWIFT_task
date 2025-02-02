@@ -11,6 +11,17 @@ type MockBranchRepo struct {
 	mock.Mock
 }
 
+func (m *MockBranchRepo) GetCountryNameByISO2Code(countryISO2code string) (*model.Country, error) {
+	args := m.Called(countryISO2code)
+
+	country, ok := args.Get(0).(*model.Country)
+	if !ok {
+		country = nil
+	}
+
+	return country, args.Error(1)
+}
+
 func (m *MockBranchRepo) GetBankBySwiftCode(swiftCode string) (*model.Bank, error) {
 	args := m.Called(swiftCode)
 	if args.Get(0) != nil {
@@ -191,6 +202,10 @@ func TestBankService_GetBanksByISO2code(t *testing.T) {
 func TestBankService_AddBank(t *testing.T) {
 	mockRepo := new(MockBranchRepo)
 	mockRepo.On("AddBank", mock.Anything).Return(nil)
+	mockRepo.On("GetCountryNameByISO2Code", "PL").Return(&model.Country{
+		CountryISO2: "PL",
+		CountryName: "POLAND",
+	}, nil)
 	service := &BankService{bankRepo: mockRepo}
 
 	t.Run("Should return ValidationError due to ISO2 code", func(t *testing.T) {

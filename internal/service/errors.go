@@ -14,6 +14,10 @@ type BankNotExistsError struct {
 	Message string
 }
 
+type CountryCodeNotExistsError struct {
+	Message string
+}
+
 func (e *ValidationError) Error() string {
 	return fmt.Sprintf("validation error: %s", e.Message)
 }
@@ -36,4 +40,12 @@ func (e *BankNotExistsError) Error() string {
 
 func NewBankNotExistsError(message string) *BankNotExistsError {
 	return &BankNotExistsError{Message: message}
+}
+
+func (e *CountryCodeNotExistsError) Error() string {
+	return fmt.Sprintf("country code not exists: %s", e.Message)
+}
+
+func NewCountryCodeNotExistsError(message string) *CountryCodeNotExistsError {
+	return &CountryCodeNotExistsError{Message: message}
 }

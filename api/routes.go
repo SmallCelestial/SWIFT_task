@@ -15,8 +15,8 @@ func SetupRouter(branchHandler *handler.BankHandler) *gin.Engine {
 	return router
 }
 
-func Run(branchHandler *handler.BankHandler) {
-	router := SetupRouter(branchHandler)
+func Run(bankHandler *handler.BankHandler) {
+	router := SetupRouter(bankHandler)
 	err := router.Run(":8080")
 	if err != nil {
 		log.Fatalf("Server failed to start: %v", err)
