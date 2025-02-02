@@ -6,11 +6,11 @@ type ValidationError struct {
 	Message string
 }
 
-type BranchExistsError struct {
+type BankExistsError struct {
 	Message string
 }
 
-type BranchNotExistsError struct {
+type BankNotExistsError struct {
 	Message string
 }
 
@@ -22,18 +22,18 @@ func NewValidationError(message string) *ValidationError {
 	return &ValidationError{Message: message}
 }
 
-func (e *BranchExistsError) Error() string {
-	return fmt.Sprintf("branch exists: %s", e.Message)
+func (e *BankExistsError) Error() string {
+	return fmt.Sprintf("bank exists: %s", e.Message)
 }
 
-func NewBranchExistsError(message string) *BranchExistsError {
-	return &BranchExistsError{Message: message}
+func NewBankExistsError(message string) *BankExistsError {
+	return &BankExistsError{Message: message}
 }
 
-func (e *BranchNotExistsError) Error() string {
-	return fmt.Sprintf("branch not found: %s", e.Message)
+func (e *BankNotExistsError) Error() string {
+	return fmt.Sprintf("bank not found: %s", e.Message)
 }
 
-func NewBranchNotExistsError(message string) *BranchNotExistsError {
-	return &BranchNotExistsError{Message: message}
+func NewBankNotExistsError(message string) *BankNotExistsError {
+	return &BankNotExistsError{Message: message}
 }

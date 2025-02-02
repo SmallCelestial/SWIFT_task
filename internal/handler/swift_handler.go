@@ -9,18 +9,18 @@ import (
 )
 
 type BranchHandler struct {
-	branchService *service.BranchService
+	branchService *service.BankService
 }
 
-func NewBranchHandler(branchService *service.BranchService) *BranchHandler {
+func NewBranchHandler(branchService *service.BankService) *BranchHandler {
 	return &BranchHandler{branchService: branchService}
 }
 
 func (h *BranchHandler) GetBranchDetails(c *gin.Context) {
 	swiftCode := c.Param("swift-code")
 
-	branchDto, err := h.branchService.GetBranchDetails(swiftCode)
-	var branchServiceErr *service.BranchNotExistsError
+	branchDto, err := h.branchService.GetBankDetails(swiftCode)
+	var branchServiceErr *service.BankNotExistsError
 	if errors.As(err, &branchServiceErr) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Bank not found"})
 		return
@@ -36,7 +36,7 @@ func (h *BranchHandler) GetBranchDetails(c *gin.Context) {
 func (h *BranchHandler) GetBranchesByISO2code(c *gin.Context) {
 	countryISO2code := c.Param("countryISO2code")
 
-	response, err := h.branchService.GetBranchesByISO2code(countryISO2code)
+	response, err := h.branchService.GetBanksByISO2code(countryISO2code)
 	var validationErr *service.ValidationError
 	if errors.As(err, &validationErr) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Error()})
@@ -47,7 +47,7 @@ func (h *BranchHandler) GetBranchesByISO2code(c *gin.Context) {
 		return
 	}
 	if response == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Branches not found for ISO2 code " + countryISO2code})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Banks not found for ISO2 code " + countryISO2code})
 		return
 	}
 
@@ -63,7 +63,7 @@ func (h *BranchHandler) AddSwiftCode(c *gin.Context) {
 		return
 	}
 
-	err = h.branchService.AddSwiftCode(branch)
+	err = h.branchService.AddBank(branch)
 
 	var validationErr *service.ValidationError
 	if errors.As(err, &validationErr) {
@@ -71,7 +71,7 @@ func (h *BranchHandler) AddSwiftCode(c *gin.Context) {
 		return
 	}
 
-	var branchExistsErr *service.BranchExistsError
+	var branchExistsErr *service.BankExistsError
 	if errors.As(err, &branchExistsErr) {
 		c.JSON(http.StatusConflict, gin.H{"error": branchExistsErr.Error()})
 		return
@@ -88,8 +88,8 @@ func (h *BranchHandler) AddSwiftCode(c *gin.Context) {
 func (h *BranchHandler) RemoveSwiftCode(c *gin.Context) {
 	swiftCode := c.Param("swift-code")
 
-	err := h.branchService.RemoveBranchBySwiftCode(swiftCode)
-	var branchNotExistsErr *service.BranchNotExistsError
+	err := h.branchService.RemoveBankBySwiftCode(swiftCode)
+	var branchNotExistsErr *service.BankNotExistsError
 	if errors.As(err, &branchNotExistsErr) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "SWIFT code " + swiftCode + " not found"})
 		return

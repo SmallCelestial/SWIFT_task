@@ -6,7 +6,7 @@ func (b Bank) GetHeadQuarterSwiftCode() string {
 	return b.SwiftCode[:8] + "XXX"
 }
 
-func (b Bank) ToBranchWithoutCountryNameDto() BankWithoutCountryNameDto {
+func (b Bank) ToBankWithoutCountryNameDto() BankWithoutCountryNameDto {
 	return BankWithoutCountryNameDto{
 		Address:       b.Address,
 		BankName:      b.BankName,
@@ -16,12 +16,12 @@ func (b Bank) ToBranchWithoutCountryNameDto() BankWithoutCountryNameDto {
 	}
 }
 
-func (b Bank) ToBranchDto(countryName string) BankDto {
+func (b Bank) ToBankDto() BankDto {
 	return BankDto{
 		Address:       b.Address,
 		BankName:      b.BankName,
 		CountryISO2:   b.CountryISO2,
-		CountryName:   countryName,
+		CountryName:   b.Country.CountryName,
 		IsHeadquarter: b.IsHeadquarter(),
 		SwiftCode:     b.SwiftCode,
 		Branches:      nil,

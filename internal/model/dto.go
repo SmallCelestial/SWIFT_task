@@ -21,5 +21,5 @@ type BankDto struct {
 type CountryBanksDto struct {
 	CountryISO2 string                      `json:"countryISO2"`
 	CountryName string                      `json:"countryName"`
-	Branches    []BankWithoutCountryNameDto `json:"swiftCodes"`
+	Banks       []BankWithoutCountryNameDto `json:"swiftCodes"`
 }
