@@ -82,7 +82,7 @@ func (r *bankRepository) RemoveBankBySwiftCode(swiftCode string) error {
 func (r *bankRepository) GetCountryNameByISO2Code(countryISO2code string) (*model.Country, error) {
 	country := model.Country{}
 	err := r.db.
-		Where("country_iso2_code = ?", countryISO2code).
+		Where("country_iso2 = ?", countryISO2code).
 		First(&country).Error
 
 	if err != nil {

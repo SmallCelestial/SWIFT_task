@@ -71,6 +71,12 @@ func (h *BankHandler) AddBank(c *gin.Context) {
 		return
 	}
 
+	var countryCodeNotExistsErr *service.CountryCodeNotExistsError
+	if errors.As(err, &countryCodeNotExistsErr) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": countryCodeNotExistsErr.Error()})
+		return
+	}
+
 	var bankExistsErr *service.BankExistsError
 	if errors.As(err, &bankExistsErr) {
 		c.JSON(http.StatusConflict, gin.H{"error": bankExistsErr.Error()})
