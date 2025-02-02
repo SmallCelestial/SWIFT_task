@@ -10,7 +10,6 @@ COPY . .
 
 WORKDIR /app/cmd
 
-# TODO: dodać obsługę innych systemów
 RUN CGO_ENABLED=0 GOOS=linux go build -o /app/main .
 
 FROM alpine:latest
