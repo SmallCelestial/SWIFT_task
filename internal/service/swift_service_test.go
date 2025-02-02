@@ -11,7 +11,7 @@ type MockBranchRepo struct {
 	mock.Mock
 }
 
-func (m *MockBranchRepo) GetBranchBySwiftCode(swiftCode string) (*model.Bank, error) {
+func (m *MockBranchRepo) GetBankBySwiftCode(swiftCode string) (*model.Bank, error) {
 	args := m.Called(swiftCode)
 	if args.Get(0) != nil {
 		return args.Get(0).(*model.Bank), args.Error(1)
@@ -19,29 +19,29 @@ func (m *MockBranchRepo) GetBranchBySwiftCode(swiftCode string) (*model.Bank, er
 	return nil, args.Error(1)
 }
 
-func (m *MockBranchRepo) GetOrdinaryBranchesForHeadquarter(swiftCode string) ([]model.Bank, error) {
+func (m *MockBranchRepo) GetBranchesForHeadquarter(swiftCode string) ([]model.Bank, error) {
 	args := m.Called(swiftCode)
 	return args.Get(0).([]model.Bank), args.Error(1)
 }
 
-func (m *MockBranchRepo) GetBranchesByISO2code(countryISO2code string) ([]model.Bank, error) {
+func (m *MockBranchRepo) GetBanksByISO2code(countryISO2code string) ([]model.Bank, error) {
 	args := m.Called(countryISO2code)
 	return args.Get(0).([]model.Bank), args.Error(1)
 }
 
-func (m *MockBranchRepo) CreateBranch(branch *model.Bank) error {
+func (m *MockBranchRepo) AddBank(branch *model.Bank) error {
 	args := m.Called(branch)
 	return args.Error(0)
 }
 
-func (m *MockBranchRepo) RemoveBranchBySwiftCode(swiftCode string) error {
+func (m *MockBranchRepo) RemoveBankBySwiftCode(swiftCode string) error {
 	args := m.Called(swiftCode)
 	return args.Error(0)
 }
 
 func TestBranchService_AddSwiftCode(t *testing.T) {
 	mockRepo := new(MockBranchRepo)
-	mockRepo.On("CreateBranch", mock.Anything).Return(nil)
+	mockRepo.On("AddBank", mock.Anything).Return(nil)
 	service := &BranchService{branchRepo: mockRepo}
 
 	t.Run("Should return ValidationError due to ISO2 code", func(t *testing.T) {
@@ -74,7 +74,7 @@ func TestBranchService_AddSwiftCode(t *testing.T) {
 			CountryName:   "Poland",
 			IsHeadquarter: false,
 		}
-		mockRepo.On("GetBranchBySwiftCode", duplicatedBranch.SwiftCode).Return(&duplicatedBranch, nil)
+		mockRepo.On("GetBankBySwiftCode", duplicatedBranch.SwiftCode).Return(&duplicatedBranch, nil)
 
 		// when
 		err := service.AddSwiftCode(duplicatedBranch)
@@ -95,7 +95,7 @@ func TestBranchService_AddSwiftCode(t *testing.T) {
 			CountryName:   "Poland",
 			IsHeadquarter: false,
 		}
-		mockRepo.On("GetBranchBySwiftCode", validBranch.SwiftCode).Return(nil, nil)
+		mockRepo.On("GetBankBySwiftCode", validBranch.SwiftCode).Return(nil, nil)
 
 		// when
 		err := service.AddSwiftCode(validBranch)
@@ -112,7 +112,7 @@ func TestBranchService_GetBranchDetails(t *testing.T) {
 
 	t.Run("Should return BranchNotExistError due to not existing branch with given swiftCode", func(t *testing.T) {
 		// given
-		mockRepo.On("GetBranchBySwiftCode", "XXXXXX12346").Return(nil, nil)
+		mockRepo.On("GetBankBySwiftCode", "XXXXXX12346").Return(nil, nil)
 
 		// when
 		branch, err := service.GetBranchDetails("XXXXXX12346")
@@ -135,7 +135,7 @@ func TestBranchService_GetBranchDetails(t *testing.T) {
 			IsHeadquarter: false,
 		}
 		expectedBranchInfo := validBranch.ToBranchDto()
-		mockRepo.On("GetBranchBySwiftCode", validBranch.SwiftCode).Return(&validBranch, nil)
+		mockRepo.On("GetBankBySwiftCode", validBranch.SwiftCode).Return(&validBranch, nil)
 
 		// when
 		branch, err := service.GetBranchDetails(validBranch.SwiftCode)
@@ -171,10 +171,10 @@ func TestBranchService_GetBranchDetails(t *testing.T) {
 			CountryName:   "Poland",
 			IsHeadquarter: false,
 		}
-		mockRepo.On("GetBranchBySwiftCode", headquarter.SwiftCode).Return(&headquarter, nil)
-		mockRepo.On("GetBranchBySwiftCode", branch1.SwiftCode).Return(&branch1, nil)
-		mockRepo.On("GetBranchBySwiftCode", branch2.SwiftCode).Return(&branch2, nil)
-		mockRepo.On("GetOrdinaryBranchesForHeadquarter", headquarter.SwiftCode).Return([]model.Bank{*branch1, *branch2}, nil)
+		mockRepo.On("GetBankBySwiftCode", headquarter.SwiftCode).Return(&headquarter, nil)
+		mockRepo.On("GetBankBySwiftCode", branch1.SwiftCode).Return(&branch1, nil)
+		mockRepo.On("GetBankBySwiftCode", branch2.SwiftCode).Return(&branch2, nil)
+		mockRepo.On("GetBranchesForHeadquarter", headquarter.SwiftCode).Return([]model.Bank{*branch1, *branch2}, nil)
 		expectedBranchInfo := headquarter.ToBranchDto()
 		expectedBranchInfo.Branches = []model.BankWithoutCountryNameDto{branch1.ToBranchWithoutCountryNameDto(), branch2.ToBranchWithoutCountryNameDto()}
 
@@ -225,7 +225,7 @@ func TestBranchService_GetBranchesByISO2code(t *testing.T) {
 			CountryName:   "Poland",
 			IsHeadquarter: false,
 		}
-		mockRepo.On("GetBranchesByISO2code", "PL").Return([]model.Bank{branch1, branch2}, nil)
+		mockRepo.On("GetBanksByISO2code", "PL").Return([]model.Bank{branch1, branch2}, nil)
 		expectedBranches := model.CountryBanksDto{
 			CountryISO2: "PL",
 			CountryName: "Poland",
@@ -249,7 +249,7 @@ func TestBranchService_RemoveBranchBySwiftCode(t *testing.T) {
 
 	t.Run("Should return BranchNotExistError due to branch doesn't exist", func(t *testing.T) {
 		// given
-		mockRepo.On("GetBranchBySwiftCode", "AAAAAAAAAAA").Return(nil, nil)
+		mockRepo.On("GetBankBySwiftCode", "AAAAAAAAAAA").Return(nil, nil)
 		// when
 		err := service.RemoveBranchBySwiftCode("AAAAAAAAAAA")
 
@@ -269,8 +269,8 @@ func TestBranchService_RemoveBranchBySwiftCode(t *testing.T) {
 			CountryName:   "Poland",
 			IsHeadquarter: false,
 		}
-		mockRepo.On("GetBranchBySwiftCode", "BBBBBBBBBBB").Return(&branch, nil)
-		mockRepo.On("RemoveBranchBySwiftCode", "BBBBBBBBBBB").Return(nil)
+		mockRepo.On("GetBankBySwiftCode", "BBBBBBBBBBB").Return(&branch, nil)
+		mockRepo.On("RemoveBankBySwiftCode", "BBBBBBBBBBB").Return(nil)
 
 		// when
 		err := service.RemoveBranchBySwiftCode("BBBBBBBBBBB")

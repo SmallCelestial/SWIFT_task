@@ -8,15 +8,15 @@ import (
 )
 
 type BranchService struct {
-	branchRepo repository.BranchRepository
+	branchRepo repository.BankRepository
 }
 
-func NewBranchService(branchRepo repository.BranchRepository) *BranchService {
+func NewBranchService(branchRepo repository.BankRepository) *BranchService {
 	return &BranchService{branchRepo: branchRepo}
 }
 
 func (s *BranchService) GetBranchDetails(swiftCode string) (*model.BankDto, error) {
-	branch, err := s.branchRepo.GetBranchBySwiftCode(swiftCode)
+	branch, err := s.branchRepo.GetBankBySwiftCode(swiftCode)
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +27,7 @@ func (s *BranchService) GetBranchDetails(swiftCode string) (*model.BankDto, erro
 	branchDto := branch.ToBranchDto()
 
 	if branch.IsHeadquarter {
-		branches, err := s.branchRepo.GetOrdinaryBranchesForHeadquarter(swiftCode)
+		branches, err := s.branchRepo.GetBranchesForHeadquarter(swiftCode)
 		if err != nil {
 			return nil, err
 		}
@@ -48,7 +48,7 @@ func (s *BranchService) GetBranchesByISO2code(countryISO2code string) (*model.Co
 		return nil, NewValidationError("Len of countryISO2 code should be 2. Got len: " + strconv.Itoa(len(countryISO2code)))
 	}
 
-	branches, err := s.branchRepo.GetBranchesByISO2code(countryISO2code)
+	branches, err := s.branchRepo.GetBanksByISO2code(countryISO2code)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +74,7 @@ func (s *BranchService) AddSwiftCode(branch model.Bank) error {
 		return NewValidationError("Len of countryISO2 code should be 2. Got len: " + strconv.Itoa(len(branch.CountryISO2)))
 	}
 
-	existingBranch, err := s.branchRepo.GetBranchBySwiftCode(branch.SwiftCode)
+	existingBranch, err := s.branchRepo.GetBankBySwiftCode(branch.SwiftCode)
 	if err != nil {
 		return err
 	}
@@ -82,11 +82,11 @@ func (s *BranchService) AddSwiftCode(branch model.Bank) error {
 		return NewBranchExistsError("Bank with swiftCode " + branch.SwiftCode + " already exists.")
 	}
 	fmt.Println("Adding swift code: " + branch.SwiftCode)
-	return s.branchRepo.CreateBranch(&branch)
+	return s.branchRepo.AddBank(&branch)
 }
 
 func (s *BranchService) RemoveBranchBySwiftCode(swiftCode string) error {
-	branch, err := s.branchRepo.GetBranchBySwiftCode(swiftCode)
+	branch, err := s.branchRepo.GetBankBySwiftCode(swiftCode)
 	if err != nil {
 		return err
 	}
@@ -94,5 +94,5 @@ func (s *BranchService) RemoveBranchBySwiftCode(swiftCode string) error {
 		return NewBranchNotExistsError("Bank with swiftCode " + swiftCode + " not exists.")
 	}
 
-	return s.branchRepo.RemoveBranchBySwiftCode(swiftCode)
+	return s.branchRepo.RemoveBankBySwiftCode(swiftCode)
 }

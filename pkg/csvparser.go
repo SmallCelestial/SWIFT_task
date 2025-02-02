@@ -32,6 +32,7 @@ func GetBanksFromRecords(records [][]string) map[string]model.Bank {
 		address := record[4]
 		bankName := record[3]
 		countryISO2 := strings.ToUpper(record[0])
+		countryName := strings.ToUpper(record[6])
 		swiftCode := record[1]
 
 		bankRecord := model.Bank{
@@ -39,6 +40,10 @@ func GetBanksFromRecords(records [][]string) map[string]model.Bank {
 			BankName:    bankName,
 			CountryISO2: countryISO2,
 			SwiftCode:   swiftCode,
+			Country: model.Country{
+				CountryISO2: countryISO2,
+				CountryName: countryName,
+			},
 		}
 
 		banks[swiftCode] = bankRecord
