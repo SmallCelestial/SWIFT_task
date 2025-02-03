@@ -13,6 +13,11 @@ services:
       - "5432:5432"
     networks:
       - swift_network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d swift_task" ]
+      interval: 2s
+      timeout: 5s
+      retries: 15
 
   go-app:
     build: .
@@ -25,7 +30,8 @@ services:
       - DB_PORT=5432
       - DATA_FILE_PATH=/app/data/swift-codes.csv
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "8080:8080"
     volumes:
