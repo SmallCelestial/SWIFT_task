@@ -46,6 +46,12 @@ build and start all services:
 docker-compose up --build
 ```
 
+If the application is already built, and you just want to start the containers, use this command:
+
+```bash
+docker-compose up
+```
+
 ### 3.Access the Application
 
 Once the containers are up and running, you can access the application locally:
