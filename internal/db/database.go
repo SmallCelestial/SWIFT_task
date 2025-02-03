@@ -5,6 +5,7 @@ import (
 	"SWIFT_task/internal/model"
 	"gorm.io/gorm"
 	"log"
+	"os"
 )
 
 func InitDB() *gorm.DB {
@@ -38,6 +39,10 @@ func fillData(db *gorm.DB) {
 	db.Model(&model.BankRelationship{}).Count(&relationshipCount)
 	db.Model(&model.Country{}).Count(&countryCount)
 	if bankCount == 0 && relationshipCount == 0 && countryCount == 0 {
+		filePath := os.Getenv("DATA_FILE_PATH")
+		if filePath == "" {
+			filePath = "data/swift-codes.csv"
+		}
 		SaveData("/app/data/swift-codes.csv", db)
 	}
 }
